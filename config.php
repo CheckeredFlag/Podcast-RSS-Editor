@@ -1,5 +1,5 @@
 <?php
 return [
-    'xmlFile'		=> 'feeds/adult.xml',
+    'xmlFile'		=> 'feeds/example.xml',
     'languageFile'	=> 'language/English.php',
 ];

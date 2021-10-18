@@ -42,7 +42,7 @@ if (!empty($_POST['newXMLFile']) || !empty($_POST['newLanguage'])) {
     $oldConfig = $newConfig = file_get_contents($configFile);
 
     if (!empty($_POST['newXMLFile'])) {
-        $oldXmlFile = $xmlFileName;
+        $oldXmlFile = $config['xmlFile'];
         $newXmlFile = preg_replace('/[^\w.\/ -]/', '', $_POST['newXMLFile']);
         if ($oldXmlFile !== $newXmlFile && file_exists($newXmlFile)) {
             $newConfig = str_replace($oldXmlFile, $newXmlFile, $newConfig);
