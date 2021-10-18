@@ -1,0 +1,20 @@
+# Change Log
+- [Oct 18, 2021] - Restructured by [Marco Moreno](https://github.com/CheckeredFlag)
+    - Incorporated PR from [Marco Braghim](https://github.com/marcobraghim) for Portuguese translation & security.
+    - Moved feeds into new `feeds` directory having public access.
+    - Added channel title to top of episode list.
+    - Changed CSS color to use a variable for easier theming.
+    - Added `view` get parameter to replace negative episode number.
+    - Segregated portions of PHP from HMTL.
+    - Use server redirects instead of javascript.
+    - Implemented sessions for config handling.
+    - Improved sanitizing user input.
+    - Overhauled config & language loading/saving.
+    - Defined many unitialized variables to eliminate notices.
+    - Updated to use php 7 features.
+    - Added support for [VS Code](https://code.visualstudio.com) and [Lando](https://lando.dev).
+    - Moved changes to new `CHANGELOG.md`.
+- [Feb 3, 2019] Updated the layout compatibility.
+- [Jul 27, 2017] Added ‘**Preview**’ function for episode link, image file and audio file.
+- [Dec 13, 2016] Added ‘**duplicate**’ and ‘**delete**’ functions.
+- [Jul 20, 2016] Added multi-language support: Simplified Chinese, Traditional Chinese, English.

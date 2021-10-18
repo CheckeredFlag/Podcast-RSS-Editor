@@ -1,4 +1,5 @@
 <?php
-	$xmlFileName = 'example.xml';
-	$language = 'language/English.php';
-?>
+return [
+    'xmlFile'		=> 'feeds/adult.xml',
+    'languageFile'	=> 'language/English.php',
+];

@@ -1,0 +1,12 @@
+name: podcast
+config:
+  webroot: .
+proxy:
+  appserver:
+    - podcast.lndo.site
+services:
+  appserver:
+    type: php
+    via: apache
+    ssl: true
+    xdebug: true
