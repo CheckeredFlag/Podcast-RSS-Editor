@@ -40,15 +40,11 @@ if (isset($_GET['view'])) {
 }
 
 // Logout
+$logoutUrl = 'https://log:out@' . $_SERVER['HTTP_HOST'];
 if ($view === 'logout') {
-    $_SESSION = [];
-    if (ini_get('session.use_cookies')) {
-        $params = session_get_cookie_params();
-        setcookie(session_name(), '', time() - 42000,
-            $params['path'], $params['domain'],
-            $params['secure'], $params['httponly']
-        );
-    }
+    // $_SESSION = [];
+    session_unset();
+    session_destroy();
     header('Location: /?view=episodes');
     exit;
 }
@@ -258,36 +254,47 @@ for ($z = 0; $z < 10; $z++) {
 }
 
 
-$ep = isset($_GET['ep']) ? (int) $_GET['ep'] : null;
+$ep = (isset($_GET['ep']) && is_numeric($_GET['ep'])) ? (int) $_GET['ep'] : null;
 
-// Display episode
-if (!is_null($ep) && $ep >= 0) {
-    $ep2 = $t  - $ep;
-    $panelTitle = "$lang[43]$ep2$lang[44]";
-    $currentTitle = "$thisTitle[$ep]";
-    $currentDuration = "$thisSeconds[$ep]";
-    $currentHH = floor($thisSeconds[$ep] / 3600);
-    $currentMM = floor($thisSeconds[$ep] / 60 - $currentHH * 60);
-    $currentSS = $thisSeconds[$ep] - $currentHH * 3600 - $currentMM * 60;
-    $currentMonth = date('m',  strtotime($thisDate[$ep]));
-    $currentDay = date('d',  strtotime($thisDate[$ep]));
-    $currentYear = date('Y',  strtotime($thisDate[$ep]));
-    $currentHour = date('H',  strtotime($thisDate[$ep]));
-    $currentMinute = date('i',  strtotime($thisDate[$ep]));
-    $currentSecond = date('s',  strtotime($thisDate[$ep]));
-    $currentLink = "$thisLink[$ep]";
-    $currentAuthor = "$thisAuthor[$ep]";
-    $currentImage = "$thisImage[$ep]";
-    $currentFile = "$thisFile[$ep]";
-    $currentDesc = "$thisDesc[$ep]";
-    $currentDuration = "$thisSeconds[$ep]";
-    $currentLink = "$thisLink[$ep]";
-    $currentDate = "$thisDate[$ep]";
-    $currentDate2 = "$thisDate2[$ep]";
-    $currentAuthor = "$thisAuthor[$ep]";
+// Handle posted episode
+if (isset($_POST['yy']) && $_POST['yy'] === 'yes' && isset($_POST['action'])) {
+    if ($_POST['action'] === 'add') {
+
+        // Add new episode
+        $newDuration = $_POST['newHH'] * 3600 + $_POST['newMM'] * 60 + $_POST['newSS'];
+        $newDate = date(DATE_RFC2822, mktime($_POST["newHour"], $_POST["newMinute"], $_POST["newSecond"], $_POST["newMonth"], $_POST["newDay"], $_POST["newYear"]));
+        $NS = [
+            'itunes' => 'http://www.itunes.com/dtds/podcast-1.0.dtd',
+        ];
+        $xmlDoc->registerXPathNamespace('itunes', $NS['itunes']);
+        $newItem = $xmlDoc->channel->addNewItem();
+        $newItem->addChild('title', $_POST["newTitle"]);
+        $newItem->addChild('description','');
+        $newItem->description->addCData($_POST["newDesc"]);
+        $newItem->addChild('link', $_POST["newLink"]);
+        $newItem->addChild('explicit', 'no',$NS['itunes']);
+        $newItem->addChild('guid', $_POST["newLink"]);
+        $newItem->guid->addAttribute('isPermaLink', 'true');
+        $newItem->addChild('author', $_POST["newAuthor"]);
+        $newItem->addChild('image', "",$NS['itunes']);
+        $newItem->children('itunes', true)->image->addAttribute('href', $_POST["newImage"]);
+        $newItem->addChild('pubDate', $newDate);
+        $newItem->addChild('enclosure');
+        $newItem->enclosure->addAttribute('type', 'audio/mpeg');
+        $newItem->enclosure->addAttribute('url', $_POST["newFile"]);
+        $newItem->addChild('duration',  $newDuration, $NS['itunes']);
+        $xmlDoc->asXML($xmlFileName);
+
+        header("Location: {$_SERVER['HTTP_REFERER']}&notf=3");
+        exit;
+    }
 
     // Save edited episode
-    if (isset($_POST['yy']) && $_POST['yy'] === 'yes') {
+    if ($_POST['action'] === 'edit') {
+        if (isset($_POST['ep']) && is_numeric($_POST['ep'])) {
+            $ep = (int) $_POST['ep'];
+        }
+
         $NS = [
             'itunes' => 'http://www.itunes.com/dtds/podcast-1.0.dtd',
         ];
@@ -410,6 +417,35 @@ elseif ($view === 'settings') {
     HTML;
 }
 
+// Selected episode values for editing
+elseif (!is_null($ep) && $ep >= 0) {
+    $ep2 = $t  - $ep;
+    $panelTitle = "$lang[43]$ep2$lang[44]";
+    $currentTitle = "$thisTitle[$ep]";
+    $currentDuration = "$thisSeconds[$ep]";
+    $currentHH = floor($thisSeconds[$ep] / 3600);
+    $currentMM = floor($thisSeconds[$ep] / 60 - $currentHH * 60);
+    $currentSS = $thisSeconds[$ep] - $currentHH * 3600 - $currentMM * 60;
+    $currentMonth = date('m',  strtotime($thisDate[$ep]));
+    $currentDay = date('d',  strtotime($thisDate[$ep]));
+    $currentYear = date('Y',  strtotime($thisDate[$ep]));
+    $currentHour = date('H',  strtotime($thisDate[$ep]));
+    $currentMinute = date('i',  strtotime($thisDate[$ep]));
+    $currentSecond = date('s',  strtotime($thisDate[$ep]));
+    $currentLink = "$thisLink[$ep]";
+    $currentAuthor = "$thisAuthor[$ep]";
+    $currentImage = "$thisImage[$ep]";
+    $currentFile = "$thisFile[$ep]";
+    $currentDesc = "$thisDesc[$ep]";
+    $currentDuration = "$thisSeconds[$ep]";
+    $currentLink = "$thisLink[$ep]";
+    $currentDate = "$thisDate[$ep]";
+    $currentDate2 = "$thisDate2[$ep]";
+    $currentAuthor = "$thisAuthor[$ep]";
+    $action = 'edit';
+}
+
+// Default values for adding new episode
 else {
     $panelTitle = "$lang[42]";
     $currentLink = "";
@@ -424,36 +460,7 @@ else {
     $currentImage = "";
     $currentFile = "";
     $currentDesc = "";
-
-    //~Add new episode
-    if (!empty($_POST["yy"]) && $_POST['yy'] === 'yes') {
-        $newDuration = $_POST['newHH'] * 3600 + $_POST['newMM'] * 60 + $_POST['newSS'];
-        $newDate = date(DATE_RFC2822, mktime($_POST["newHour"], $_POST["newMinute"], $_POST["newSecond"], $_POST["newMonth"], $_POST["newDay"], $_POST["newYear"]));
-        $NS = [
-            'itunes' => 'http://www.itunes.com/dtds/podcast-1.0.dtd',
-        ];
-        $xmlDoc->registerXPathNamespace('itunes', $NS['itunes']);
-        $newItem = $xmlDoc->channel->addNewItem();
-        $newItem->addChild('title', $_POST["newTitle"]);
-        $newItem->addChild('description','');
-        $newItem->description->addCData($_POST["newDesc"]);
-        $newItem->addChild('link', $_POST["newLink"]);
-        $newItem->addChild('explicit', 'no',$NS['itunes']);
-        $newItem->addChild('guid', $_POST["newLink"]);
-        $newItem->guid->addAttribute('isPermaLink', 'true');
-        $newItem->addChild('author', $_POST["newAuthor"]);
-        $newItem->addChild('image', "",$NS['itunes']);
-        $newItem->children('itunes', true)->image->addAttribute('href', $_POST["newImage"]);
-        $newItem->addChild('pubDate', $newDate);
-        $newItem->addChild('enclosure');
-        $newItem->enclosure->addAttribute('type', 'audio/mpeg');
-        $newItem->enclosure->addAttribute('url', $_POST["newFile"]);
-        $newItem->addChild('duration',  $newDuration, $NS['itunes']);
-        $xmlDoc->asXML($xmlFileName);
-
-        header("Location: {$_SERVER['HTTP_REFERER']}&notf=3");
-        exit;
-    }
+    $action = 'add';
 }
 
 //~Extras
@@ -539,7 +546,8 @@ function saveConfig($file, $config) {
       </a>
     </li>
     <li>
-      <a href="?view=logout" class="" onclick="logout();">
+      <!-- <a href="?view=logout" class="" onclick="logout();"> -->
+      <a href="<?= $logoutUrl ?>">
         <svg aria-hidden="true" focusable="false" data-prefix="fas" data-icon="sign-out-alt" class="svg-inline--fa fa-sign-out-alt fa-w-16" role="img" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 512 512">
           <path fill="currentColor" d="M497 273L329 441c-15 15-41 4.5-41-17v-96H152c-13.3 0-24-10.7-24-24v-96c0-13.3 10.7-24 24-24h136V88c0-21.4 25.9-32 41-17l168 168c9.3 9.4 9.3 24.6 0 34zM192 436v-40c0-6.6-5.4-12-12-12H96c-17.7 0-32-14.3-32-32V160c0-17.7 14.3-32 32-32h84c6.6 0 12-5.4 12-12V76c0-6.6-5.4-12-12-12H96c-53 0-96 43-96 96v192c0 53 43 96 96 96h84c6.6 0 12-5.4 12-12z">
         </svg>
@@ -560,10 +568,13 @@ function saveConfig($file, $config) {
     <?= $itemList ?>
   </aside>
   <div class="editor">
-    <form action="/?ep=<?= $ep ?>" method="post">
+    <!-- <form action="/ep=<?= $ep ?>" method="post"> -->
+    <form action="/" method="post">
       <h2 class="panel-title right-in-1">
         <div class="h2-title"><?= $panelTitle ?></div>
         <div class="action-btns">
+          <input type="hidden" name="action" value="<?= $action ?>">
+          <input type="hidden" name="ep" value="<?= $ep ?>">
           <input type="submit" value="<?= $lang[41] ?>" class="right-in-10">
           <input type="checkbox" checked name="yy" value="yes" class="hide"/>
         </div>
