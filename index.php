@@ -561,6 +561,7 @@ function saveConfig($file, $config) {
 <?php if ($view === 'episodes') { ?>
 <article class="panel edit-panel">
   <aside>
+    <div id="view-feed"><a target="_blank" href="<?= $config['xmlFile'] ?>" type="button">View feed</a></div>
     <h1 class="channel-title"><?= htmlspecialchars($xmlDoc->channel->title) ?></h1>
     <a href='?view=episodes' class="item add-new-item"><h1><?= $lang[6] ?></h1></a>
     <?= $itemList ?>

@@ -9,22 +9,22 @@ function logout() {
 
     var xmlhttp;
     if (window.XMLHttpRequest) {
-      xmlhttp = new XMLHttpRequest();
+        xmlhttp = new XMLHttpRequest();
     }
     // code for IE
     else if (window.ActiveXObject) {
-      xmlhttp=new ActiveXObject("Microsoft.XMLHTTP");
+        xmlhttp=new ActiveXObject("Microsoft.XMLHTTP");
     }
     if (window.ActiveXObject) {
-      // IE clear HTTP Authentication
-      document.execCommand("ClearAuthenticationCache");
-      window.location.href=baseURL;
+        // IE clear HTTP Authentication
+        document.execCommand("ClearAuthenticationCache");
+        window.location.href=baseURL;
     } else {
-      xmlhttp.open("GET", baseURL+'assets/logout.js', true, "logout", "logout");
-      xmlhttp.send("");
-      xmlhttp.onreadystatechange = function() {
-        if (xmlhttp.readyState == 4) {window.location.href=baseURL;}
-      }
+        xmlhttp.open("GET", baseURL+'assets/logout.js', true, "logout", "logout");
+        xmlhttp.send("");
+        xmlhttp.onreadystatechange = function() {
+            if (xmlhttp.readyState == 4) {window.location.href=baseURL;}
+        }
     }
     return false;
-  }
+}
